@@ -1,4 +1,4 @@
-// server.// server.js - OpenAI to NVIDIA NIM API Proxy (Kimi K3 Only)
+// server.// server.js - OpenAI to NVIDIA NIM API Proxy (Nemotron 3 Ultra)
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -23,17 +23,17 @@ const ENABLE_THINKING_MODE = process.env.ENABLE_THINKING_MODE === 'true';
 
 // 🎯 MODEL MAPPING — كل شيء يروح على Kimi K3 فقط
 const MODEL_MAPPING = {
-  'kimi': 'moonshotai/kimi-k3',
-  'kimi-k3': 'moonshotai/kimi-k3',
-  'moonshotai/kimi-k3': 'moonshotai/kimi-k3',
-  'gpt-4': 'moonshotai/kimi-k3',
-  'gpt-4o': 'moonshotai/kimi-k3',
-  'deepseek': 'moonshotai/kimi-k3',
-  'default': 'moonshotai/kimi-k3'
+  'kimi': 'nvidia/nemotron-3-ultra-550b-a55b',
+  'kimi-k3': 'nvidia/nemotron-3-ultra-550b-a55b',
+  'nvidia/nemotron-3-ultra-550b-a55b': 'nvidia/nemotron-3-ultra-550b-a55b',
+  'gpt-4': 'nvidia/nemotron-3-ultra-550b-a55b',
+  'gpt-4o': 'nvidia/nemotron-3-ultra-550b-a55b',
+  'deepseek': 'nvidia/nemotron-3-ultra-550b-a55b',
+  'default': 'nvidia/nemotron-3-ultra-550b-a55b'
 };
 
 // 🔄 FALLBACK CHAIN - فقط Kimi
-const FALLBACK_CHAIN = ['moonshotai/kimi-k3'];
+const FALLBACK_CHAIN = ['nvidia/nemotron-3-ultra-550b-a55b'];
 
 // 🛡️ ROLEPLAY GUARD
 const RP_GUARD_INSTRUCTION = `You are ONLY the character described in the system prompt or conversation. Follow these rules strictly:
@@ -86,7 +86,7 @@ function stripUserBreakout(text) {
 
 // 🎨 THINKING-CAPABLE MODELS
 const THINKING_MODELS = [
-  'moonshotai/kimi-k3'
+  'nvidia/nemotron-3-ultra-550b-a55b'
 ];
 
 // 🔄 Helper: make a NIM request with automatic 429 fallback
@@ -132,11 +132,11 @@ async function makeNimRequest(nimRequest, stream) {
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
-    service: 'OpenAI to NVIDIA NIM Proxy (Kimi K3 Only)',
+    service: 'OpenAI to NVIDIA NIM Proxy (Nemotron 3 Ultra)',
     reasoning_display: SHOW_REASONING,
     thinking_mode: ENABLE_THINKING_MODE,
     nim_api_configured: !!NIM_API_KEY,
-    forced_model: 'moonshotai/kimi-k3'
+    forced_model: 'nvidia/nemotron-3-ultra-550b-a55b'
   });
 });
 
@@ -146,7 +146,7 @@ app.get('/', (req, res) => {
     service: 'OpenAI to NVIDIA NIM Proxy',
     version: '2.3-kimi-only',
     status: 'running',
-    forced_model: 'moonshotai/kimi-k3',
+    forced_model: 'nvidia/nemotron-3-ultra-550b-a55b',
     endpoints: {
       health: '/health',
       models: '/v1/models',
@@ -162,7 +162,7 @@ app.get('/v1/models', (req, res) => {
     object: 'model',
     created: Date.now(),
     owned_by: 'nvidia-nim-proxy',
-    nim_model: 'moonshotai/kimi-k3',
+    nim_model: 'nvidia/nemotron-3-ultra-550b-a55b',
     supports_thinking: true
   }));
 
@@ -198,7 +198,7 @@ app.post('/v1/chat/completions', async (req, res) => {
     }
 
     // إجبار الموديل على Kimi K3 فقط
-    let nimModel = MODEL_MAPPING[model] || 'moonshotai/kimi-k3';
+    let nimModel = MODEL_MAPPING[model] || 'nvidia/nemotron-3-ultra-550b-a55b';
 
     // 🛡️ FULL CUSTOM PROMPT
     const FULL_SYSTEM_PROMPT = `<system_prompt>
@@ -403,7 +403,7 @@ Internalize all prior context and let it shape behavior and continuity without r
     if (error.response?.status === 401) {
       errorMessage = 'Invalid NVIDIA API key. Please check your NIM_API_KEY in environment variables.';
     } else if (error.response?.status === 429) {
-      errorMessage = 'Kimi K3 is currently rate limited. Please wait 60 seconds and try again.';
+      errorMessage = 'Nemotron 3 Ultra is currently rate limited. Please wait 60 seconds and try again.';
       res.setHeader('Retry-After', error.response?.headers?.['retry-after'] || 60);
     } else if (error.response?.data?.detail) {
       errorMessage = error.response.data.detail;
